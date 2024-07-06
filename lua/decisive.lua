@@ -1,4 +1,16 @@
+local function check_version()
+  if vim.version().major < 0 or vim.version().minor < 10 then
+    emsg = string.format("decisive.nvim requires nvim-0.10 to work, current version is %d.%d.%d", vim.version().major, vim.version().minor, vim.version().patch)
+    vim.notify(emsg, vim.log.levels.ERROR)
+    return false
+  end
+  return true
+end
+
 local function align_csv_clear(opts)
+  if not check_version() then
+    return
+  end
   local ns = vim.api.nvim_create_namespace('__align_csv')
   -- clear existing extmarks
   vim.api.nvim_buf_clear_namespace(0, ns, 0, -1)
@@ -37,6 +49,9 @@ local function split_line(line, sep)
 end
 
 local function align_csv(opts)
+  if not check_version() then
+    return
+  end
   local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
   if #lines == 0 then
     return
@@ -83,13 +98,13 @@ local function align_csv(opts)
         if col_display_width < col_max_lengths[col_idx] then
           vim.api.nvim_buf_set_extmark(0, ns, line_idx-1, extmark_col, {
             virt_text = {{string.rep(" ", col_max_lengths[col_idx] - col_display_width), "CsvFillHl"}},
-            virt_text_pos = "inline",
+            virt_text_pos = 'inline',
           })
         else
           -- no need for virtual text, the column is full. but add it anyway because of the previous/next column jumps
           vim.api.nvim_buf_set_extmark(0, ns, line_idx-1, extmark_col, {
             virt_text = {{"", "CsvFillHl"}},
-            virt_text_pos = "inline",
+            virt_text_pos = 'inline',
           })
         end
         col_from_start = extmark_col
@@ -112,6 +127,9 @@ local function align_csv(opts)
 end
 
 local function align_csv_next_col()
+  if not check_version() then
+    return
+  end
   local ns = vim.api.nvim_create_namespace('__align_csv')
   local next_mark = vim.api.nvim_buf_get_extmarks(0, ns, {vim.fn.line('.')-1, vim.fn.col('.')+1}, -1, {limit = 1})
   if #next_mark == 1 then
@@ -125,6 +143,9 @@ local function align_csv_next_col()
 end
 
 local function align_csv_prev_col()
+  if not check_version() then
+    return
+  end
   local ns = vim.api.nvim_create_namespace('__align_csv')
   local next_mark = vim.api.nvim_buf_get_extmarks(0, ns, {vim.fn.line('.')-1, vim.fn.col('.')-2}, 0, {limit = 1})
   if vim.fn.col('.') == 1 then
@@ -145,6 +166,9 @@ local function align_csv_prev_col()
 end
 
 local function inner_cell_to()
+  if not check_version() then
+    return
+  end
   local ns = vim.api.nvim_create_namespace('__align_csv')
   local prev_mark = vim.api.nvim_buf_get_extmarks(0, ns, {vim.fn.line('.')-1, vim.fn.col('.')-1}, 0, {limit = 1})
   local next_mark = vim.api.nvim_buf_get_extmarks(0, ns, {vim.fn.line('.')-1, vim.fn.col('.')+1}, -1, {limit = 1})
